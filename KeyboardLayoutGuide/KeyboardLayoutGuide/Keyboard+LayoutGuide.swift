@@ -148,14 +148,17 @@ private extension Notification {
             return nil
         }
         
-        if name == UIResponder.keyboardWillHideNotification {
-            return 0.0
-        } else {
-            // Weirdly enough UIKeyboardFrameEndUserInfoKey doesn't have the same behaviour
-            // in ios 10 or iOS 11 so we can't rely on v.cgRectValue.width
-            let screenHeight = UIApplication.shared.keyWindow?.bounds.height ?? UIScreen.main.bounds.height
-            return screenHeight - keyboardEndFrame.minY
-        }
+        let keyboardMinY = keyboardEndFrame.minY
+        let screenBounds = UIApplication.shared.activeWindow?.bounds ?? UIScreen.main.bounds
+        let isKeyboardFloating: Bool = {
+            !(screenBounds.maxX == keyboardEndFrame.maxX &&
+                screenBounds.maxY == keyboardEndFrame.maxY &&
+                screenBounds.width == keyboardEndFrame.width)
+        }()
+        
+        return isKeyboardFloating ?
+            0 :
+            screenBounds.height - keyboardMinY
     }
     
     var animationDuration: CGFloat? {
@@ -175,4 +178,24 @@ private func isVisible(view: UIView) -> Bool {
         return false
     }
     return isVisible(view: view, inView: view.superview)
+}
+
+extension UIApplication {
+
+    // Finds the currently active window, This works similar to the
+    // deprecated `keyWindow` however it supports multi-window'd
+    // iPad apps
+    var activeWindow: UIWindow? {
+        if #available(iOS 13, *) {
+            return connectedScenes
+                .filter { $0.activationState == .foregroundActive }
+                .map { $0 as? UIWindowScene }
+                .compactMap { $0 }
+                .first?.windows
+                .first { $0.isKeyWindow }
+        } else {
+            return keyWindow
+        }
+    }
+
 }
