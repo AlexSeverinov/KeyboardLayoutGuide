@@ -16,12 +16,12 @@ internal class Keyboard {
 extension UIView {
     private enum Identifiers {
         static var usingSafeArea = "KeyboardLayoutGuideUsingSafeArea"
-        static var notUsingSafeArea = "KeyboardLayoutGuide"
+        static var notUsingSafeArea = "KeyboardLayoutGuideNotUsingSafeArea"
     }
 
     /// A layout guide representing the inset for the keyboard.
     /// Use this layout guide’s top anchor to create constraints pinning to the top of the keyboard or the bottom of safe area.
-    public var keyboardLayoutGuide: UILayoutGuide {
+    public var keyboardLayoutGuideSafeArea: UILayoutGuide {
         getOrCreateKeyboardLayoutGuide(identifier: Identifiers.usingSafeArea, usesSafeArea: true)
     }
 
@@ -109,22 +109,19 @@ open class KeyboardLayoutGuide: UILayoutGuide {
     @objc
     private func adjustKeyboard(_ note: Notification) {
         if var height = note.keyboardHeight, let duration = note.animationDuration {
-            if #available(iOS 11.0, *), usesSafeArea, height > 0, let bottom = owningView?.safeAreaInsets.bottom {
-                height -= bottom
-            }
-            heightConstraint?.constant = height
-            if duration > 0.0 {
-                animate(note)
-            }
-            Keyboard.shared.currentHeight = height
+        if #available(iOS 11.0, *), usesSafeArea, height > 0, let bottom = owningView?.safeAreaInsets.bottom {
+            height -= bottom
         }
+        heightConstraint?.constant = height
+        if duration > 0.0 {
+            animate(note)
+        }
+        Keyboard.shared.currentHeight = height
+    }
     }
 
     private func animate(_ note: Notification) {
-        if
-            let owningView = self.owningView,
-            isVisible(view: owningView)
-        {
+        if let owningView = self.owningView, isVisible(view: owningView) {
             self.owningView?.layoutIfNeeded()
         } else {
             UIView.performWithoutAnimation {
@@ -146,7 +143,7 @@ extension UILayoutGuide {
 
 extension Notification {
     var keyboardHeight: CGFloat? {
-        guard let keyboardFrame = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
+        guard let keyboardEndFrame = (userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return nil
         }
         
@@ -156,7 +153,7 @@ extension Notification {
             // Weirdly enough UIKeyboardFrameEndUserInfoKey doesn't have the same behaviour
             // in ios 10 or iOS 11 so we can't rely on v.cgRectValue.width
             let screenHeight = UIApplication.shared.keyWindow?.bounds.height ?? UIScreen.main.bounds.height
-            return screenHeight - keyboardFrame.cgRectValue.minY
+            return screenHeight - keyboardEndFrame.minY
         }
     }
     
