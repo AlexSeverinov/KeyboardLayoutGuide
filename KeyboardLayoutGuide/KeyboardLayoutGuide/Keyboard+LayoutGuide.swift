@@ -44,7 +44,7 @@ extension UIView {
     }
 }
 
-open class KeyboardLayoutGuide: UILayoutGuide {
+public final class KeyboardLayoutGuide: UILayoutGuide {
     public var usesSafeArea = true {
         didSet {
             updateBottomAnchor()
@@ -133,15 +133,16 @@ open class KeyboardLayoutGuide: UILayoutGuide {
 
 // MARK: - Helpers
 
-extension UILayoutGuide {
-    internal var heightConstraint: NSLayoutConstraint? {
-        return owningView?.constraints.first {
+internal extension UILayoutGuide {
+    var heightConstraint: NSLayoutConstraint? {
+        owningView?.constraints.first {
             $0.firstItem as? UILayoutGuide == self && $0.firstAttribute == .height
         }
     }
 }
 
-extension Notification {
+private extension Notification {
+    
     var keyboardHeight: CGFloat? {
         guard let keyboardEndFrame = (userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return nil
@@ -164,7 +165,7 @@ extension Notification {
 
 // Credits to John Gibb for this nice helper :)
 // https://stackoverflow.com/questions/1536923/determine-if-uiview-is-visible-to-the-user
-func isVisible(view: UIView) -> Bool {
+private func isVisible(view: UIView) -> Bool {
     func isVisible(view: UIView, inView: UIView?) -> Bool {
         guard let inView = inView else { return true }
         let viewFrame = inView.convert(view.bounds, from: view)
