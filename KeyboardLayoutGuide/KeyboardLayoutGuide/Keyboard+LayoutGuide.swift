@@ -108,7 +108,8 @@ public final class KeyboardLayoutGuide: UILayoutGuide {
 
     @objc
     private func adjustKeyboard(_ note: Notification) {
-        if var height = note.keyboardHeight, let duration = note.animationDuration {
+        guard var height = note.keyboardHeight, let duration = note.animationDuration else { return }
+        
         if #available(iOS 11.0, *), usesSafeArea, height > 0, let bottom = owningView?.safeAreaInsets.bottom {
             height -= bottom
         }
@@ -118,14 +119,13 @@ public final class KeyboardLayoutGuide: UILayoutGuide {
         }
         Keyboard.shared.currentHeight = height
     }
-    }
 
     private func animate(_ note: Notification) {
-        if let owningView = self.owningView, isVisible(view: owningView) {
-            self.owningView?.layoutIfNeeded()
+        if let owningView = owningView, isVisible(view: owningView) {
+            owningView.layoutIfNeeded()
         } else {
             UIView.performWithoutAnimation {
-                self.owningView?.layoutIfNeeded()
+                owningView?.layoutIfNeeded()
             }
         }
     }
@@ -159,7 +159,7 @@ private extension Notification {
     }
     
     var animationDuration: CGFloat? {
-        return self.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? CGFloat
+        self.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? CGFloat
     }
 }
 
