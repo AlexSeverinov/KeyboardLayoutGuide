@@ -109,7 +109,7 @@ public final class KeyboardLayoutGuide: UILayoutGuide {
     @objc
     private func adjustKeyboard(_ note: Notification) {
         guard var height = note.keyboardHeight, let duration = note.animationDuration else { return }
-        
+
         if #available(iOS 11.0, *), usesSafeArea, height > 0, let bottom = owningView?.safeAreaInsets.bottom {
             height -= bottom
         }
@@ -142,12 +142,11 @@ internal extension UILayoutGuide {
 }
 
 private extension Notification {
-    
     var keyboardHeight: CGFloat? {
         guard let keyboardEndFrame = (userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return nil
         }
-        
+
         let keyboardMinY = keyboardEndFrame.minY
         let screenBounds = UIApplication.shared.activeWindow?.bounds ?? UIScreen.main.bounds
         let isKeyboardFloating: Bool = {
@@ -155,12 +154,12 @@ private extension Notification {
                 screenBounds.maxY == keyboardEndFrame.maxY &&
                 screenBounds.width == keyboardEndFrame.width)
         }()
-        
+
         return isKeyboardFloating ?
             0 :
             screenBounds.height - keyboardMinY
     }
-    
+
     var animationDuration: CGFloat? {
         self.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? CGFloat
     }
@@ -181,7 +180,6 @@ private func isVisible(view: UIView) -> Bool {
 }
 
 extension UIApplication {
-
     // Finds the currently active window, This works similar to the
     // deprecated `keyWindow` however it supports multi-window'd
     // iPad apps
@@ -197,5 +195,4 @@ extension UIApplication {
             return keyWindow
         }
     }
-
 }
